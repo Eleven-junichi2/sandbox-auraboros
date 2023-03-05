@@ -25,12 +25,14 @@ textfactory.register_font(
 class TitleMenuScene(Scene):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        textfactory.set_current_font("misaki_gothic")
+        textfactory.register_text("hello_world", "Hello, World!")
 
     def update(self, dt):
         pass
 
     def draw(self, screen):
-        pass
+        textfactory.render("hello_world", screen, (16, 0))
 
 
 def run(fps_num=60):
