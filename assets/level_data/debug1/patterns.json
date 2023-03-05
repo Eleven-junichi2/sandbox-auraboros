@@ -1,0 +1,174 @@
+{
+    "scouts": [
+        {
+            "timing": 0,
+            "enemy": "scoutdisk",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "scoutdisk",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 40,
+            "enemy": "scoutdisk",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 60,
+            "enemy": "scoutdisk",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        }
+    ],
+    "strikers": [
+        {
+            "timing": 0,
+            "enemy": "scoutdisk",
+            "pattern": "strike_to_player",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "scoutdisk",
+            "pattern": "strike_to_player",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 40,
+            "enemy": "scoutdisk",
+            "pattern": "strike_to_player",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 60,
+            "enemy": "scoutdisk",
+            "pattern": "strike_to_player",
+            "pos": [
+                "random",
+                0
+            ]
+        }
+    ],
+    "yugekitai": [
+        {
+            "timing": 0,
+            "enemy": "trumpla",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "trumpla",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "trumpla",
+            "pattern": "random_vertical",
+            "pos": [
+                "random",
+                0
+            ]
+        },
+        {
+            "timing": 40,
+            "enemy": "trumpla",
+            "pattern": "strike_to_player",
+            "pos": [
+                "random",
+                0
+            ]
+        }
+    ],
+    "viperteam": [
+        {
+            "timing": 0,
+            "enemy": "trumpla",
+            "pattern": "random_horizontal",
+            "pos": [
+                64,
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "trumpla",
+            "pattern": "random_horizontal",
+            "pos": [
+                128,
+                0
+            ]
+        },
+        {
+            "timing": 30,
+            "enemy": "trumpla",
+            "pattern": "random_horizontal",
+            "pos": [
+                192,
+                0
+            ]
+        },
+        {
+            "timing": 20,
+            "enemy": "trumpla",
+            "pattern": "random_horizontal",
+            "pos": [
+                256,
+                0
+            ]
+        },
+        {
+            "timing": 0,
+            "enemy": "trumpla",
+            "pattern": "random_horizontal",
+            "pos": [
+                320,
+                0
+            ]
+        }
+    ],
+    "debug_shooting": [
+        {
+            "timing": 0,
+            "enemy": "trumpla",
+            "pattern": null,
+            "pos": [
+                "random",
+                0
+            ]
+        }
+    ]
+}
