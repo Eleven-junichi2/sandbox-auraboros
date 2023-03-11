@@ -8,9 +8,6 @@ import traceback
 import sys
 
 
-conversion_dict = {0: "`", 1: ".", 2: "#", 3: "~"}
-
-
 def generate_mapdata(width, height, square=0) -> list[list[int]]:
     """return list[y][x]"""
     return [[square for _ in range(width)] for _ in range(height)]
@@ -45,8 +42,8 @@ def convert_map_to_display(
 
 
 def make_room_at_random_on_mapdata(
-        list_2d: list[list[int]], how_many: int, room_size_limit=None,
-        try_limit=99) -> dict:
+        list_2d: list[list[int]], how_many: int, square,
+        room_size_limit=None, try_limit=99, ) -> dict:
     """try_limit 部屋を作る際、既に作った部屋と重複した場合の再試行を行える回数"""
     map_width = len(list_2d[0])
     map_height = len(list_2d)
@@ -96,7 +93,7 @@ def make_room_at_random_on_mapdata(
             else:
                 break
         fill_mapdata(list_2d, room_info["from_x"], room_info["from_y"],
-                     room_info["width"], room_info["height"], 1)
+                     room_info["width"], room_info["height"], square)
         making_log_list.append(
             {"from_x": room_info["from_x"], "from_y": room_info["from_y"],
              "width": room_info["width"], "height": room_info["height"]})
@@ -149,8 +146,9 @@ def print_matrix(list_2d: list[list], with_frame=False,
 
 
 if __name__ == "__main__":
+    conversion_dict = {0: "`", 1: ".", 2: "#", 3: "~"}
     dungeon_map_data = generate_mapdata(56, 34, 0)
-    make_room_at_random_on_mapdata(dungeon_map_data, 4, 6)
+    make_room_at_random_on_mapdata(dungeon_map_data, 4, 6, 1)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)

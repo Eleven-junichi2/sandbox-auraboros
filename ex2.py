@@ -10,6 +10,8 @@ from auraboros.schedule import IntervalCounter
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
 
+import dungeongen
+
 AssetFilePath.set_asset_root(Path(sys.argv[0]).parent / "assets")
 
 pygame.init()
@@ -35,12 +37,111 @@ class TitleMenuScene(Scene):
         textfactory.render("hello_world", screen, (16, 0))
 
 
+class DungeonScene(Scene):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.map_width = 56
+        self.map_height = 34
+        self.map_data = dungeongen.generate_mapdata(
+            self.map_width, self.map_height, 0)
+        dungeongen.make_room_at_random_on_mapdata(self.map_data, 4, 1)
+        self.square_size = 32
+        self.camera_offset_x = 0
+        self.camera_offset_y = 0
+        self.camera_scroll_speed = {"left": 1, "up": 1, "right": 1, "down": 1}
+        self.camera_scroll_accel = 1  # constant
+        self.camera_scroll_max_speed = 24
+        self.map_surface = pygame.Surface(
+            (self.square_size*self.map_width,
+             self.square_size*self.map_height)).convert()
+        self.keyboard.register_keyaction(
+            pygame.K_UP,
+            0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
+        self.keyboard.register_keyaction(
+            pygame.K_DOWN,
+            0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
+        self.keyboard.register_keyaction(
+            pygame.K_RIGHT,
+            0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
+        self.keyboard.register_keyaction(
+            pygame.K_LEFT,
+            0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
+
+    def go_up_camera(self):
+        self.camera_offset_y -= self.camera_scroll_speed["up"]
+        if self.camera_scroll_speed["up"] < self.camera_scroll_max_speed:
+            self.camera_scroll_speed["up"] += self.camera_scroll_accel
+
+    def go_down_camera(self):
+        self.camera_offset_y += self.camera_scroll_speed["down"]
+        if self.camera_scroll_speed["down"] < self.camera_scroll_max_speed:
+            self.camera_scroll_speed["down"] += self.camera_scroll_accel
+
+    def go_right_camera(self):
+        self.camera_offset_x += self.camera_scroll_speed["right"]
+        if self.camera_scroll_speed["right"] < self.camera_scroll_max_speed:
+            self.camera_scroll_speed["right"] += self.camera_scroll_accel
+
+    def go_left_camera(self):
+        self.camera_offset_x -= self.camera_scroll_speed["left"]
+        if self.camera_scroll_speed["left"] < self.camera_scroll_max_speed:
+            self.camera_scroll_speed["left"] += self.camera_scroll_accel
+
+    def decelerate_camera_speed_left(self):
+        if 1 < self.camera_scroll_speed["left"]:
+            self.camera_scroll_speed["left"] -= self.camera_scroll_accel
+
+    def decelerate_camera_speed_up(self):
+        if 1 < self.camera_scroll_speed["up"]:
+            self.camera_scroll_speed["up"] -= self.camera_scroll_accel
+
+    def decelerate_camera_speed_right(self):
+        if 1 < self.camera_scroll_speed["right"]:
+            self.camera_scroll_speed["right"] -= self.camera_scroll_accel
+
+    def decelerate_camera_speed_down(self):
+        if 1 < self.camera_scroll_speed["down"]:
+            self.camera_scroll_speed["down"] -= self.camera_scroll_accel
+
+    def event(self, event):
+        # if event.type == pygame.MOUSEWHEEL:
+        #     print(event.y)
+        pass
+
+    def update(self, dt):
+        self.keyboard.do_action_by_keyinput(pygame.K_UP)
+        self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
+        self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
+        self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
+
+    def draw(self, screen):
+        pygame.draw.rect(
+            self.map_surface, (255, 255, 255),
+            (0, 0, self.square_size*self.map_width,
+             self.square_size*self.map_height,),
+            1)
+        for y, line in enumerate(self.map_data):
+            for x, square in enumerate(line):
+                if square == 1:
+                    pygame.draw.rect(
+                        self.map_surface, (0, 122, 0),
+                        (self.square_size*x,
+                         self.square_size*y,
+                         self.square_size,
+                         self.square_size), 1)
+        screen.blit(self.map_surface, (0, 0),
+                    (self.camera_offset_x, self.camera_offset_y,
+                     global_.w_size[0], global_.w_size[1]))
+
+
 def run(fps_num=60):
     global fps
     fps = fps_num
     running = True
     scene_manager = SceneManager()
     scene_manager.push(TitleMenuScene(scene_manager))
+    scene_manager.push(DungeonScene(scene_manager))
+    scene_manager.transition_to(1)
     while running:
         dt = clock.tick(fps)/1000  # dt means delta time
 
