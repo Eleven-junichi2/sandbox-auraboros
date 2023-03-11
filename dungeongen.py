@@ -45,7 +45,8 @@ def convert_map_to_display(
 
 
 def make_room_at_random_on_mapdata(
-        list_2d: list[list[int]], how_many: int, try_limit=99) -> dict:
+        list_2d: list[list[int]], how_many: int, room_size_limit=None,
+        try_limit=99) -> dict:
     """try_limit 部屋を作る際、既に作った部屋と重複した場合の再試行を行える回数"""
     map_width = len(list_2d[0])
     map_height = len(list_2d)
@@ -58,13 +59,21 @@ def make_room_at_random_on_mapdata(
             # print("try: ", current_try)
             room_info = {"from_x": 0, "from_y": 0, "width": 0, "height": 0}
             room_info["from_x"] = randint(0, map_width-1)
-            room_info["width"] = randint(
-                0, map_width-1-room_info["from_x"])
+            if room_size_limit:
+                room_info["width"] = randint(
+                    0, room_size_limit)
+            else:
+                room_info["width"] = randint(
+                    0, map_width-1-room_info["from_x"])
             if room_info["from_x"]+room_info["width"] > map_width-1:
                 room_info["width"] = 0
             room_info["from_y"] = randint(0, map_height-1)
-            room_info["height"] = randint(
-                0, map_height-1-room_info["from_y"])
+            if room_size_limit:
+                room_info["height"] = randint(
+                    0, room_size_limit)
+            else:
+                room_info["height"] = randint(
+                    0, map_height-1-room_info["from_y"])
             if room_info["from_y"]+room_info["height"] > map_height-1:
                 room_info["height"] = 0
             for making_log in making_log_list:
@@ -141,7 +150,7 @@ def print_matrix(list_2d: list[list], with_frame=False,
 
 if __name__ == "__main__":
     dungeon_map_data = generate_mapdata(56, 34, 0)
-    make_room_at_random_on_mapdata(dungeon_map_data, 4)
+    make_room_at_random_on_mapdata(dungeon_map_data, 4, 6)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)
