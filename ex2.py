@@ -42,9 +42,18 @@ class DungeonScene(Scene):
         super().__init__(*args, **kwargs)
         self.map_width = 56
         self.map_height = 34
-        self.map_data = dungeongen.generate_mapdata(
-            self.map_width, self.map_height, 0)
-        dungeongen.make_room_at_random_on_mapdata(self.map_data, 4, 1)
+        dungeon_area_data, area_list = dungeongen.split_map_to_area(
+            dungeongen.generate_mapdata(
+                self.map_width, self.map_height, 0), 4)
+        dungeon_area_data, room_list = dungeongen.make_room_in_area_map(
+            dungeon_area_data, area_list)
+        dungeongen.make_path_between_areas(
+            dungeon_area_data, area_list, room_list, 5)
+        self.map_data = dungeongen.convert_area_map_to_mapdata(
+            dungeon_area_data)
+        self.minimap_x = global_.w_size[0] // 3
+        self.minimap_y = global_.w_size[1] // 3
+        self.minimap_square_size = 3
         self.square_size = 32
         self.camera_offset_x = 0
         self.camera_offset_y = 0
@@ -53,7 +62,9 @@ class DungeonScene(Scene):
         self.camera_scroll_max_speed = 24
         self.map_surface = pygame.Surface(
             (self.square_size*self.map_width,
-             self.square_size*self.map_height)).convert()
+             self.square_size*self.map_height))
+        self.minimap_surface = pygame.Surface(global_.w_size)
+        self.minimap_surface.set_colorkey((0, 0, 0))
         self.keyboard.register_keyaction(
             pygame.K_UP,
             0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
@@ -122,16 +133,23 @@ class DungeonScene(Scene):
             1)
         for y, line in enumerate(self.map_data):
             for x, square in enumerate(line):
-                if square == 1:
+                if square == 1 or square == 4:
                     pygame.draw.rect(
                         self.map_surface, (0, 122, 0),
                         (self.square_size*x,
                          self.square_size*y,
                          self.square_size,
                          self.square_size), 1)
+                    pygame.draw.rect(
+                        self.minimap_surface, (0, 122, 122),
+                        (self.minimap_x+self.minimap_square_size*x,
+                         self.minimap_y+self.minimap_square_size*y,
+                         self.minimap_square_size-1,
+                         self.minimap_square_size-1), 1)
         screen.blit(self.map_surface, (0, 0),
                     (self.camera_offset_x, self.camera_offset_y,
                      global_.w_size[0], global_.w_size[1]))
+        screen.blit(self.minimap_surface, (0, 0))
 
 
 def run(fps_num=60):
