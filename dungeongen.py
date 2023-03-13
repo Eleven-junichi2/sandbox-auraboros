@@ -18,18 +18,15 @@ def fill_mapdata(list_2d: list[list],
                  item_to_fill_square):
     for y in range(from_y, from_y+height):
         for x in range(from_x, from_x+width):
-            try:
-                list_2d[y][x] = item_to_fill_square
-            except IndexError:
-                print(traceback.format_exc())
-                print("\t"+"args in fill_mapdata():")
-                print("\t"*2+f"from_x: {from_x} from_y: {from_y}")
-                print("\t"*2+f"width: {width} height: {height}")
-                if width > len(list_2d[0]):
-                    print("\t"+"given width exceeds the map size.")
-                if height > len(list_2d):
-                    print("\t"+"given height exceeds the map size.")
-                sys.exit(1)
+            list_2d[y][x] = item_to_fill_square
+
+
+def fill_mapdata_pos_to_pos(list_2d: list[list],
+                            from_x: int, from_y: int, to_x: int, to_y: int,
+                            item_to_fill_square):
+    for y in range(from_y, to_y+1):
+        for x in range(from_x, to_x+1):
+            list_2d[y][x] = item_to_fill_square
 
 
 def convert_map_to_display(
@@ -145,11 +142,71 @@ def print_matrix(list_2d: list[list], with_frame=False,
     # ---
 
 
+def split_map_to_area(list_2d: list[list], num_of_area: int, area_min_size=3):
+    # TODO implement when num of area >= 5
+    height = len(list_2d)
+    width = len(list_2d[0])
+    area_map = generate_mapdata(width, height, 0)
+    # v_split_pos = randint(0, height-1)  # pos of vertical split line
+    v_split_pos = height-1
+    # pos of horizontal split line
+    h_split_pos = randint(area_min_size, width-1-area_min_size)
+    home_pos = [0, 0]
+    # recursion = 0
+    for area_num in range(1, num_of_area+1):
+        if area_num % 3 == 0:
+            v_split_pos = randint(area_min_size, v_split_pos-area_min_size)
+            fill_mapdata_pos_to_pos(
+                area_map, home_pos[0], home_pos[1],
+                width-1, v_split_pos, 3)
+            # 右辺
+            fill_mapdata(
+                area_map, width-1, home_pos[1], 1, v_split_pos, 0)
+            # 下底
+            fill_mapdata(
+                area_map, home_pos[0], v_split_pos,
+                width-home_pos[0], 1, 0)
+            h_split_pos = randint(
+                h_split_pos+area_min_size, width-1-area_min_size)
+        else:
+            if area_num % 2 == 0:
+                fill_mapdata_pos_to_pos(
+                    area_map, h_split_pos+1, 0, width-1, v_split_pos, area_num)
+                # 右辺
+                fill_mapdata(
+                    area_map, width-1, home_pos[1], 1, v_split_pos+1, 0)
+                # 下底
+                fill_mapdata(
+                    area_map, h_split_pos, v_split_pos,
+                    width-h_split_pos, 1, 0)
+                home_pos[0] = h_split_pos+1
+            else:
+                fill_mapdata(area_map, home_pos[0], home_pos[0], h_split_pos+1,
+                             v_split_pos+1, area_num)
+                # 右辺
+                fill_mapdata(
+                    area_map, h_split_pos, home_pos[1], 1, v_split_pos+1, 0)
+                # 下底
+                fill_mapdata(
+                    area_map, home_pos[0], v_split_pos, width, 1, 0)
+            if area_num % 4 == 0:
+                fill_mapdata(
+                    area_map, h_split_pos, home_pos[1], 1, v_split_pos, 0)
+        print("area:", area_num)
+        print("home_pos:", home_pos)
+        print("h_split_pos, v_split_pos:", h_split_pos, v_split_pos)
+    return area_map
+
+
 if __name__ == "__main__":
-    conversion_dict = {0: "`", 1: ".", 2: "#", 3: "~"}
+    conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
+    conversion_dict_debug = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4"}
     dungeon_map_data = generate_mapdata(56, 34, 0)
-    make_room_at_random_on_mapdata(dungeon_map_data, 4, 6, 1)
+    dungeon_area_data = split_map_to_area(dungeon_map_data, 4)
+    # make_room_at_random_on_mapdata(dungeon_map_data, 4, 1, 10)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)
-    print_matrix(map_to_display)
+    # print_matrix(map_to_display)
+    print_matrix(convert_map_to_display(
+        dungeon_area_data, conversion_dict_debug))
