@@ -4,8 +4,9 @@
 # 3 = water
 # 4 = pathway square
 from random import randint
-import traceback
+from typing import Tuple
 import sys
+import traceback
 
 
 def generate_mapdata(width, height, square=0) -> list[list[int]]:
@@ -142,20 +143,31 @@ def print_matrix(list_2d: list[list], with_frame=False,
     # ---
 
 
-def split_map_to_area(list_2d: list[list], num_of_area: int, area_min_size=3):
+def split_map_to_area(
+        list_2d: list[list],
+        num_of_area: int,
+        area_min_size=3) -> Tuple[list[list[int]], list[dict]]:
     # TODO implement when num of area >= 5
+    if num_of_area > 4:
+        raise ValueError("num_of_area must be smaller than or equal to 4.")
     height = len(list_2d)
     width = len(list_2d[0])
     area_map = generate_mapdata(width, height, 0)
     # v_split_pos = randint(0, height-1)  # pos of vertical split line
     v_split_pos = height-1
     # pos of horizontal split line
-    h_split_pos = randint(area_min_size, width-1-area_min_size)
+    if num_of_area <= 2:
+        h_split_pos = randint(area_min_size, width-1-area_min_size)
+    else:
+        h_split_pos = randint(
+            area_min_size, width-2-area_min_size*(num_of_area-1))
     home_pos = [0, 0]
-    # recursion = 0
+    area_list = []
     for area_num in range(1, num_of_area+1):
         if area_num % 3 == 0:
-            v_split_pos = randint(area_min_size, v_split_pos-area_min_size)
+            v_split_pos = randint(area_min_size, v_split_pos-area_min_size-1)
+            print("area_min_size, v_split_pos-area_min_size",
+                  area_min_size, v_split_pos-area_min_size)
             fill_mapdata_pos_to_pos(
                 area_map, home_pos[0], home_pos[1],
                 width-1, v_split_pos, 3)
@@ -166,12 +178,19 @@ def split_map_to_area(list_2d: list[list], num_of_area: int, area_min_size=3):
             fill_mapdata(
                 area_map, home_pos[0], v_split_pos,
                 width-home_pos[0], 1, 0)
-            h_split_pos = randint(
-                h_split_pos+area_min_size, width-1-area_min_size)
+            try:
+                h_split_pos = randint(
+                    h_split_pos+area_min_size, width-2-area_min_size)
+            except ValueError:
+                traceback.print_exc()
+                print("h_split_pos+area_min_size", h_split_pos+area_min_size)
+                print("width-1-area_min_size", width-1-area_min_size)
+                sys.exit(1)
         else:
             if area_num % 2 == 0:
+                home_pos[0] = h_split_pos+1
                 fill_mapdata_pos_to_pos(
-                    area_map, h_split_pos+1, 0, width-1, v_split_pos, area_num)
+                    area_map, home_pos[0], 0, width-1, v_split_pos, area_num)
                 # 右辺
                 fill_mapdata(
                     area_map, width-1, home_pos[1], 1, v_split_pos+1, 0)
@@ -179,7 +198,6 @@ def split_map_to_area(list_2d: list[list], num_of_area: int, area_min_size=3):
                 fill_mapdata(
                     area_map, h_split_pos, v_split_pos,
                     width-h_split_pos, 1, 0)
-                home_pos[0] = h_split_pos+1
             else:
                 fill_mapdata(area_map, home_pos[0], home_pos[0], h_split_pos+1,
                              v_split_pos+1, area_num)
@@ -190,23 +208,71 @@ def split_map_to_area(list_2d: list[list], num_of_area: int, area_min_size=3):
                 fill_mapdata(
                     area_map, home_pos[0], v_split_pos, width, 1, 0)
             if area_num % 4 == 0:
+                # 左辺
                 fill_mapdata(
                     area_map, h_split_pos, home_pos[1], 1, v_split_pos, 0)
-        print("area:", area_num)
-        print("home_pos:", home_pos)
-        print("h_split_pos, v_split_pos:", h_split_pos, v_split_pos)
-    return area_map
+    # -- collect area list --
+    for area_num in range(1, num_of_area+1):
+        # print(area_num)
+        home_pos_was_found = False
+        end_x_was_found = False
+        for y, line in enumerate(area_map):
+            for x, square in enumerate(line):
+                if not home_pos_was_found and square == area_num:
+                    home_pos_was_found = True
+                    area_home_pos = (x, y)
+                if not end_x_was_found and home_pos_was_found and square == 0:
+                    end_x_was_found = True
+                    end_x = x-1
+                if end_x_was_found:
+                    if x == end_x:
+                        break
+        for y, line in enumerate(area_map):
+            if y >= area_home_pos[1]:
+                if line[area_home_pos[0]] == 0:
+                    # print("end_y", y-1)
+                    end_y = y-1
+                    break
+        area_list.append(
+            {"id": area_num, "home_pos": area_home_pos,
+                "end_pos": (end_x, end_y)})
+    return area_map, area_list
+
+
+def make_room_in_area_map(
+        area_map: list[list[int]], area_list: list[dict],
+        min_room_width=2, min_room_height=2) -> list[list[int]]:
+    map_width = len(area_map[0])
+    map_height = len(area_map)
+    new_area_map = generate_mapdata(map_width, map_height, 0)
+    for area in area_list:
+        try:
+            from_x = randint(area["home_pos"][0],
+                             area["end_pos"][0]-min_room_width)
+            to_x = randint(from_x+min_room_width, area["end_pos"][0])
+            from_y = randint(area["home_pos"][1],
+                             area["end_pos"][1]-min_room_height)
+            to_y = randint(from_y+min_room_height, area["end_pos"][1])
+        except ValueError:
+            traceback.print_exc()
+            print("The area size is smaller than the given minimum room size.")
+            print(area["home_pos"][1], area["end_pos"][1]-min_room_height)
+            sys.exit(1)
+        fill_mapdata_pos_to_pos(
+            new_area_map, from_x, from_y, to_x, to_y, area["id"])
+    return new_area_map
 
 
 if __name__ == "__main__":
     conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
     conversion_dict_debug = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4"}
     dungeon_map_data = generate_mapdata(56, 34, 0)
-    dungeon_area_data = split_map_to_area(dungeon_map_data, 4)
-    # make_room_at_random_on_mapdata(dungeon_map_data, 4, 1, 10)
+    dungeon_area_data, area_list = split_map_to_area(dungeon_map_data, 4)
+    dungeon_area_data = make_room_in_area_map(dungeon_area_data, area_list)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)
     # print_matrix(map_to_display)
     print_matrix(convert_map_to_display(
         dungeon_area_data, conversion_dict_debug))
+    print(area_list)
