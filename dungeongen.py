@@ -180,10 +180,10 @@ def split_map_to_area(
                 width-home_pos[0], 1, 0)
             try:
                 h_split_pos = randint(
-                    h_split_pos+area_min_size, width-2-area_min_size)
+                    h_split_pos+area_min_size+1, width-2-area_min_size)
             except ValueError:
                 traceback.print_exc()
-                print("h_split_pos+area_min_size", h_split_pos+area_min_size)
+                print("h_split_pos", h_split_pos)
                 print("width-1-area_min_size", width-1-area_min_size)
                 sys.exit(1)
         else:
@@ -234,18 +234,20 @@ def split_map_to_area(
                     end_y = y-1
                     break
         area_list.append(
-            {"id": area_num, "home_pos": area_home_pos,
-                "end_pos": (end_x, end_y)})
+            {"home_pos": area_home_pos, "end_pos": (end_x, end_y)})
     return area_map, area_list
 
 
 def make_room_in_area_map(
         area_map: list[list[int]], area_list: list[dict],
-        min_room_width=2, min_room_height=2) -> list[list[int]]:
+        min_room_width=2, min_room_height=2
+) -> Tuple[list[list[int]], list[dict]]:
     map_width = len(area_map[0])
     map_height = len(area_map)
     new_area_map = generate_mapdata(map_width, map_height, 0)
-    for area in area_list:
+    room_area_list = []
+    for area_index, area in enumerate(area_list):
+        area_num = area_index + 1
         try:
             from_x = randint(area["home_pos"][0],
                              area["end_pos"][0]-min_room_width)
@@ -253,26 +255,111 @@ def make_room_in_area_map(
             from_y = randint(area["home_pos"][1],
                              area["end_pos"][1]-min_room_height)
             to_y = randint(from_y+min_room_height, area["end_pos"][1])
+            room_area_list.append(
+                {"home_pos": (from_x, from_y),
+                 "end_pos": (to_x, to_y)})
         except ValueError:
             traceback.print_exc()
             print("The area size is smaller than the given minimum room size.")
             print(area["home_pos"][1], area["end_pos"][1]-min_room_height)
             sys.exit(1)
         fill_mapdata_pos_to_pos(
-            new_area_map, from_x, from_y, to_x, to_y, area["id"])
-    return new_area_map
+            new_area_map, from_x, from_y, to_x, to_y, area_num)
+    return new_area_map, room_area_list
+
+
+def make_path_between_areas(
+        room_map: list[list[int]],
+        parent_area_list: list[dict],
+        room_area_list: list[dict],
+        square_as_path):
+    """
+    Args:
+        parent_area_list: list of parent areas of rooms
+    """
+    for i in range(len(room_area_list)):
+        print("i", i)
+        if (i+1) % 2 == 0:
+            area_bound_v_line_x = parent_area_list[i-1]["end_pos"][0] + 1
+            room_a_entrance_x = room_area_list[i-1]["end_pos"][0]
+            room_a_entrance_y = randint(
+                room_area_list[i-1]["home_pos"][1],
+                room_area_list[i-1]["end_pos"][1])
+            fill_mapdata_pos_to_pos(
+                room_map,
+                room_a_entrance_x+1, room_a_entrance_y,
+                area_bound_v_line_x, room_a_entrance_y,
+                square_as_path)
+            room_b_entrance_x = room_area_list[i]["home_pos"][0]
+            room_b_entrance_y = randint(
+                room_area_list[i]["home_pos"][1],
+                room_area_list[i]["end_pos"][1])
+            fill_mapdata_pos_to_pos(
+                room_map,
+                area_bound_v_line_x, room_b_entrance_y,
+                room_b_entrance_x-1, room_b_entrance_y,
+                square_as_path)
+            if room_a_entrance_y != room_b_entrance_y:
+                if room_a_entrance_y > room_b_entrance_y:
+                    bound_v_line_cut_start = room_b_entrance_y
+                    bound_v_line_cut_end = room_a_entrance_y
+                else:
+                    bound_v_line_cut_start = room_a_entrance_y
+                    bound_v_line_cut_end = room_b_entrance_y
+                fill_mapdata_pos_to_pos(
+                    room_map,
+                    area_bound_v_line_x, bound_v_line_cut_start,
+                    area_bound_v_line_x, bound_v_line_cut_end,
+                    square_as_path)
+        if (i+1) % 3 == 0:
+            area_bound_h_line_y = parent_area_list[i]["end_pos"][1] + 1
+            room_a_entrance_y = room_area_list[i-1]["home_pos"][1]
+            room_a_entrance_x = randint(
+                room_area_list[i-1]["home_pos"][0],
+                room_area_list[i-1]["end_pos"][0])
+            fill_mapdata_pos_to_pos(
+                room_map,
+                room_a_entrance_x, area_bound_h_line_y,
+                room_a_entrance_x, room_a_entrance_y-1,
+                square_as_path)
+            room_b_entrance_y = room_area_list[i]["end_pos"][1]
+            room_b_entrance_x = randint(
+                room_area_list[i]["home_pos"][0],
+                room_area_list[i]["end_pos"][0])
+            fill_mapdata_pos_to_pos(
+                room_map,
+                room_b_entrance_x, room_b_entrance_y+1,
+                room_b_entrance_x, area_bound_h_line_y,
+                square_as_path)
+            if room_a_entrance_x != room_b_entrance_x:
+                if room_a_entrance_x > room_b_entrance_x:
+                    bound_h_line_cut_start = room_b_entrance_x
+                    bound_h_line_cut_end = room_a_entrance_x
+                else:
+                    bound_h_line_cut_start = room_a_entrance_x
+                    bound_h_line_cut_end = room_b_entrance_x
+                fill_mapdata_pos_to_pos(
+                    room_map,
+                    bound_h_line_cut_start, area_bound_h_line_y,
+                    bound_h_line_cut_end, area_bound_h_line_y,
+                    square_as_path)
 
 
 if __name__ == "__main__":
     conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
-    conversion_dict_debug = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4"}
+    conversion_dict_debug = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", }
     dungeon_map_data = generate_mapdata(56, 34, 0)
     dungeon_area_data, area_list = split_map_to_area(dungeon_map_data, 4)
-    dungeon_area_data = make_room_in_area_map(dungeon_area_data, area_list)
+    dungeon_area_data, room_list = make_room_in_area_map(
+        dungeon_area_data, area_list)
+    make_path_between_areas(dungeon_area_data, area_list, room_list, 5)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)
     # print_matrix(map_to_display)
     print_matrix(convert_map_to_display(
         dungeon_area_data, conversion_dict_debug))
+    print("area")
     print(area_list)
+    print("room_area")
+    # print(room_list)
