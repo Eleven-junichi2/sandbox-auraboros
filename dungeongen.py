@@ -345,6 +345,21 @@ def make_path_between_areas(
                     square_as_path)
 
 
+def convert_area_map_to_mapdata(area_map) -> list[list[int]]:
+    mapdata = []
+    for line in area_map:
+        mapdata_line = []
+        for square in line:
+            if 5 != square and 0 != square:
+                mapdata_line.append(1)
+            elif square == 5:
+                mapdata_line.append(4)
+            else:
+                mapdata_line.append(0)
+        mapdata.append(mapdata_line)
+    return mapdata
+
+
 if __name__ == "__main__":
     conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
     conversion_dict_debug = {0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5", }
@@ -353,12 +368,13 @@ if __name__ == "__main__":
     dungeon_area_data, room_list = make_room_in_area_map(
         dungeon_area_data, area_list)
     make_path_between_areas(dungeon_area_data, area_list, room_list, 5)
+    dungeon_map_data = convert_area_map_to_mapdata(dungeon_area_data)
     map_to_display = convert_map_to_display(dungeon_map_data, conversion_dict)
 
     # print(map_to_display)
-    # print_matrix(map_to_display)
-    print_matrix(convert_map_to_display(
-        dungeon_area_data, conversion_dict_debug))
+    print_matrix(map_to_display)
+    # print_matrix(convert_map_to_display(
+    #     dungeon_area_data, conversion_dict_debug))
     print("area")
     print(area_list)
     print("room_area")
