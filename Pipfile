@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-auraboros = "*"
+auraboros = "==0.5.5a0"
 
 [dev-packages]
 flake8 = "*"

@@ -74,6 +74,7 @@ class DungeonScene(Scene):
             pygame.K_SPACE,
             2, 4, self.generate_dungeon)
         self.keyboard = self.keyboard_setups["camera"]
+        self.joystick_ = pygame.joystick.Joystick(0)
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -129,9 +130,20 @@ class DungeonScene(Scene):
             self.camera_scroll_speed["down"] -= self.camera_scroll_accel
 
     def event(self, event):
-        # if event.type == pygame.MOUSEWHEEL:
-        #     print(event.y)
         pass
+        # if event.type == pygame.JOYAXISMOTION:
+        #     pass
+        #     # if right_stick_axis_y > 0:
+        #     #     self.go_down_camera()
+        #     # r_stick_y = self.joystick_.get_axis(3)
+        #     # print("r stick x:", right_stick_axis_x)
+        # elif event.type == pygame.JOYBUTTONDOWN:
+        #     print(event.button)
+        # elif event.type == pygame.JOYBUTTONUP:
+        #     print(event.button)
+        # elif event.type == pygame.JOYHATMOTION:
+        #     hat_pos = self.joystick_.get_hat(0)
+        #     print(hat_pos)
 
     def update(self, dt):
         self.keyboard.do_action_by_keyinput(pygame.K_UP)
@@ -139,6 +151,28 @@ class DungeonScene(Scene):
         self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
         self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
         self.keyboard.do_action_by_keyinput(pygame.K_SPACE)
+        right_stick_axis_x = self.joystick_.get_axis(2)
+        right_stick_axis_y = self.joystick_.get_axis(3)
+        if abs(right_stick_axis_y) > 0.1:
+            self.keyboard.deactivate_keyup(pygame.K_UP)
+            self.keyboard.deactivate_keyup(pygame.K_DOWN)
+            if right_stick_axis_y > 0:
+                self.go_down_camera()
+            if right_stick_axis_y < 0:
+                self.go_up_camera()
+        else:
+            self.keyboard.activate_keyup(pygame.K_UP)
+            self.keyboard.activate_keyup(pygame.K_DOWN)
+        if abs(right_stick_axis_x) > 0.1:
+            self.keyboard.deactivate_keyup(pygame.K_RIGHT)
+            self.keyboard.deactivate_keyup(pygame.K_LEFT)
+            if right_stick_axis_x > 0:
+                self.go_right_camera()
+            if right_stick_axis_x < 0:
+                self.go_left_camera()
+        else:
+            self.keyboard.activate_keyup(pygame.K_RIGHT)
+            self.keyboard.activate_keyup(pygame.K_LEFT)
 
     def draw(self, screen):
         self.map_surface.fill((0, 0, 0))

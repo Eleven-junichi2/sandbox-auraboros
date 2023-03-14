@@ -14,33 +14,48 @@ def generate_2dlist(size_1d, size_2d, item) -> list[list]:
     return [[item for _ in range(size_2d)] for _ in range(size_1d)]
 
 
-class GameDungeonMap:
-    """
-    area_map: ダンジョン生成において部屋の割当や通路引きのために番号で区画分けしたマップ
-    """
-
-    def __init__(self):
-        self.width = 56
-        self.height = 34
-
-    def generate_area_map(self):
-        pass
-
-
-def fill_mapdata(list_2d: list[list],
-                 from_x: int, from_y: int, width: int, height: int,
-                 item_to_fill_square):
-    for y in range(from_y, from_y+height):
-        for x in range(from_x, from_x+width):
-            list_2d[y][x] = item_to_fill_square
-
-
-def fill_mapdata_pos_to_pos(list_2d: list[list],
-                            from_x: int, from_y: int, to_x: int, to_y: int,
-                            item_to_fill_square):
+def fill_2dlist(list_2d: list[list],
+                from_x: int, from_y: int, to_x: int, to_y: int,
+                item_to_fill):
     for y in range(from_y, to_y+1):
         for x in range(from_x, to_x+1):
-            list_2d[y][x] = item_to_fill_square
+            list_2d[y][x] = item_to_fill
+
+
+class GameDungeonMap:
+    """
+    マップを表すlistはlist[y][x]の形式
+    area_map: 部屋の割当や通路引き等に使うダンジョン生成用の二次元list
+    """
+
+    def __init__(self, width=56, height=34):
+        self.width = width
+        self.height = height
+        self.dict_to_convert_area_map = {}
+        self.map_square_dict = {}
+        self.map_object_dict = {}
+        self.area_map = []
+        self.object_map = {}
+        self.square_map = []
+        self.map_to_display = []
+
+    def _generate_area_map(self):
+        """
+        area_mapのlistの要素の数字は
+        0 壁など移動不可マス 1 通路 2~ 各エリアを表す番号 を表す
+        """
+        area_map = generate_2dlist(self.height, self.width, 0)
+
+    def _convert_area_map(self):
+        pass
+
+    def convert_map_to_display(
+            list_2d: list[list[int]],
+            conversion_dict: dict[int:str]) -> list[list[str]]:
+        map_to_display = []
+        for line in list_2d:
+            map_to_display.append([conversion_dict[square] for square in line])
+        return map_to_display
 
 
 def convert_map_to_display(
@@ -52,7 +67,7 @@ def convert_map_to_display(
     return map_to_display
 
 
-def print_matrix(list_2d: list[list], with_frame=False,
+def print_2dlist(list_2d: list[list], with_frame=False,
                  frame_vertical="-", frame_horizontal="|"):
     def print_frame_vertical(num_of_digit_vertical,
                              frame_vertical, frame_size_vertical, ):
