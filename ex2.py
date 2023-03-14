@@ -9,7 +9,7 @@ from auraboros.global_ import init  # noqa
 from auraboros.schedule import IntervalCounter
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
-from auraboros.gameinput import Keyboard
+from auraboros.gameinput import Keyboard, KeyboardSetupDict
 
 import dungeongen
 
@@ -56,23 +56,24 @@ class DungeonScene(Scene):
              self.square_size*self.map_height))
         self.minimap_surface = pygame.Surface(global_.w_size)
         self.minimap_surface.set_colorkey((0, 0, 0))
-        self.camera_keyboard = Keyboard()
-        self.camera_keyboard.register_keyaction(
+        self.keyboard_setups = KeyboardSetupDict()
+        self.keyboard_setups["camera"] = Keyboard()
+        self.keyboard_setups["camera"].register_keyaction(
             pygame.K_UP,
             0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
-        self.camera_keyboard.register_keyaction(
+        self.keyboard_setups["camera"].register_keyaction(
             pygame.K_DOWN,
             0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
-        self.camera_keyboard.register_keyaction(
+        self.keyboard_setups["camera"].register_keyaction(
             pygame.K_RIGHT,
             0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
-        self.camera_keyboard.register_keyaction(
+        self.keyboard_setups["camera"].register_keyaction(
             pygame.K_LEFT,
             0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
-        self.camera_keyboard.register_keyaction(
+        self.keyboard_setups["camera"].register_keyaction(
             pygame.K_SPACE,
             2, 4, self.generate_dungeon)
-        self.keyboard = self.camera_keyboard
+        self.keyboard = self.keyboard_setups["camera"]
 
     def generate_dungeon(self):
         self.map_width = 56
