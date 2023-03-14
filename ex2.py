@@ -9,6 +9,7 @@ from auraboros.global_ import init  # noqa
 from auraboros.schedule import IntervalCounter
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
+from auraboros.gameinput import Keyboard
 
 import dungeongen
 
@@ -40,17 +41,7 @@ class TitleMenuScene(Scene):
 class DungeonScene(Scene):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.map_width = 56
-        self.map_height = 34
-        dungeon_area_data, area_list = dungeongen.split_map_to_area(
-            dungeongen.generate_mapdata(
-                self.map_width, self.map_height, 0), 4)
-        dungeon_area_data, room_list = dungeongen.make_room_in_area_map(
-            dungeon_area_data, area_list)
-        dungeongen.make_path_between_areas(
-            dungeon_area_data, area_list, room_list, 5)
-        self.map_data = dungeongen.convert_area_map_to_mapdata(
-            dungeon_area_data)
+        self.generate_dungeon()
         self.minimap_x = global_.w_size[0] // 3
         self.minimap_y = global_.w_size[1] // 3
         self.minimap_square_size = 3
@@ -65,18 +56,40 @@ class DungeonScene(Scene):
              self.square_size*self.map_height))
         self.minimap_surface = pygame.Surface(global_.w_size)
         self.minimap_surface.set_colorkey((0, 0, 0))
-        self.keyboard.register_keyaction(
+        self.camera_keyboard = Keyboard()
+        self.camera_keyboard.register_keyaction(
             pygame.K_UP,
             0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
-        self.keyboard.register_keyaction(
+        self.camera_keyboard.register_keyaction(
             pygame.K_DOWN,
             0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
-        self.keyboard.register_keyaction(
+        self.camera_keyboard.register_keyaction(
             pygame.K_RIGHT,
             0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
-        self.keyboard.register_keyaction(
+        self.camera_keyboard.register_keyaction(
             pygame.K_LEFT,
             0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
+        self.camera_keyboard.register_keyaction(
+            pygame.K_SPACE,
+            2, 4, self.generate_dungeon)
+        self.keyboard = self.camera_keyboard
+
+    def generate_dungeon(self):
+        self.map_width = 56
+        self.map_height = 34
+        dungeon_area_data, area_list = dungeongen.split_map_to_area(
+            dungeongen.generate_mapdata(
+                self.map_width, self.map_height, 0), 4)
+        dungeon_area_data, room_list = dungeongen.make_room_in_area_map(
+            dungeon_area_data, area_list)
+        dungeongen.make_path_between_areas(
+            dungeon_area_data, area_list, room_list, 5)
+        self.map_data = dungeongen.convert_area_map_to_mapdata(
+            dungeon_area_data)
+        conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
+        map_to_display = dungeongen.convert_map_to_display(
+            self.map_data, conversion_dict)
+        dungeongen.print_matrix(map_to_display)
 
     def go_up_camera(self):
         self.camera_offset_y -= self.camera_scroll_speed["up"]
@@ -124,8 +137,11 @@ class DungeonScene(Scene):
         self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
         self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
         self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
+        self.keyboard.do_action_by_keyinput(pygame.K_SPACE)
 
     def draw(self, screen):
+        self.map_surface.fill((0, 0, 0))
+        self.minimap_surface.fill((0, 0, 0))
         pygame.draw.rect(
             self.map_surface, (255, 255, 255),
             (0, 0, self.square_size*self.map_width,
