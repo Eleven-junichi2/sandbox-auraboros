@@ -94,11 +94,18 @@ class DungeonScene(Scene):
             0, 0, self.stop_camera_mode)
         self.keyboard = self.keyboard_setups["player"]
         # self.joystick_ = pygame.joystick.Joystick(0)
+        self.camera_mode = False
+        self.player_mode = True
         self.playermenu_surface = pygame.Surface(global_.w_size)
         self.playermenu_surface.set_colorkey((0, 0, 0))
         self.playermenu_is_showing = False
-        self.camera_mode = False
-        self.player_mode = True
+        self.playermenu_x = 32
+        self.playermenu_y = 32
+        self.playermenu_width = 32*4
+        self.playermenu_height = 32*6
+        self.playermenu_padding = 4
+        self.menucursor_width = 10
+        self.menucursor_height = 20
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -253,9 +260,25 @@ class DungeonScene(Scene):
         if self.playermenu_is_showing:
             pygame.draw.rect(
                 self.playermenu_surface, (200, 200, 255),
-                (0, 0, 32*4, 32*6,), 1)
+                (self.playermenu_x, self.playermenu_y,
+                 self.playermenu_width, self.playermenu_height), 1)
+            textfactory.render(
+                "scout_camera", self.playermenu_surface,
+                (self.menucursor_width*2+self.playermenu_x +
+                 self.playermenu_padding,
+                 self.playermenu_y+self.playermenu_padding))
+            pygame.draw.polygon(
+                self.playermenu_surface, (255, 255, 255),
+                ((self.playermenu_x+self.playermenu_padding,
+                  self.playermenu_y+self.playermenu_padding),
+                 (self.playermenu_x +
+                  self.playermenu_padding+self.menucursor_width,
+                  self.playermenu_y +
+                    self.playermenu_padding+self.menucursor_height//2),
+                 (self.playermenu_x+self.playermenu_padding,
+                  self.playermenu_y +
+                  self.playermenu_padding+self.menucursor_height)))
             screen.blit(self.playermenu_surface, (0, 0))
-            textfactory.render("scout_camera", screen, (16, 0))
 
 
 def run(fps_num=60):
