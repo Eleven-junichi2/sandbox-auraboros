@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 auraboros = "==0.5.5a0"
+pygame = "*"
 
 [dev-packages]
 flake8 = "*"

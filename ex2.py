@@ -27,6 +27,10 @@ textfactory.register_font(
     "ayu18mincho_9x18gm",
     pygame.font.Font(
         AssetFilePath.font("ayu18gothic-1.3a.tar/9x18gm.bdf"), 18))
+textfactory.register_font(
+    "k8x12S",
+    pygame.font.Font(
+        AssetFilePath.font("k8x12/k8x12S.ttf"), 24))
 
 
 class TitleMenuScene(Scene):
@@ -46,7 +50,8 @@ class DungeonScene(Scene):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # textfactory.set_current_font("misaki_gothic")
-        textfactory.set_current_font("ayu18mincho_9x18gm")
+        # textfactory.set_current_font("ayu18mincho_9x18gm")
+        textfactory.set_current_font("k8x12S")
         textfactory.register_text("scout_camera", "見渡す")
         self.generate_dungeon()
         self.minimap_x = global_.w_size[0] // 3
