@@ -73,6 +73,9 @@ class DungeonScene(Scene):
         self.keyboard_setups["player"].register_keyaction(
             pygame.K_s,
             0, 0, self.show_player_menu)
+        self.keyboard_setups["player"].register_keyaction(
+            pygame.K_z,
+            0, 0, self.activate_camera_mode)
         self.keyboard_setups["camera"] = Keyboard()
         self.keyboard_setups["camera"].register_keyaction(
             pygame.K_UP,
@@ -91,7 +94,7 @@ class DungeonScene(Scene):
             2, 4, self.generate_dungeon)
         self.keyboard_setups["camera"].register_keyaction(
             pygame.K_x,
-            0, 0, self.stop_camera_mode)
+            0, 0, self.cancel_camera_mode)
         self.keyboard = self.keyboard_setups["player"]
         # self.joystick_ = pygame.joystick.Joystick(0)
         self.camera_mode = False
@@ -144,7 +147,11 @@ class DungeonScene(Scene):
         if self.camera_scroll_speed["left"] < self.camera_scroll_max_speed:
             self.camera_scroll_speed["left"] += self.camera_scroll_accel
 
-    def stop_camera_mode(self):
+    def activate_camera_mode(self):
+        self.camera_mode = True
+        self.player_mode = False
+
+    def cancel_camera_mode(self):
         print("ssttoopp")
         self.camera_mode = False
         self.player_mode = True
