@@ -8,7 +8,7 @@ from auraboros.gamescene import Scene, SceneManager
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
 from auraboros import engine
-# from auraboros.gameinput import Keyboard, KeyboardSetupDict
+from auraboros.gameinput import Keyboard
 
 import dungeongen
 
@@ -65,6 +65,14 @@ class DungeonScene(Scene):
              self.square_size*self.map_height))
         self.minimap_surface = pygame.Surface(global_.w_size)
         self.minimap_surface.set_colorkey((0, 0, 0))
+        self.keyboard["player"] = Keyboard()
+        self.keyboard["player"].register_keyaction(
+            pygame.K_s,
+            0, 0, self.show_player_menu)
+        self.keyboard["player"].register_keyaction(
+            pygame.K_a,
+            0, 0, self.close_player_menu)
+        self.keyboard.set_current_setup("player")
         # self.keyboard_setups = KeyboardSetupDict()
         # self.keyboard_setups["player"] = Keyboard()
         # self.keyboard_setups["player"].register_keyaction(
@@ -94,8 +102,6 @@ class DungeonScene(Scene):
         #     0, 0, self.cancel_camera_mode)
         # self.keyboard = self.keyboard_setups["player"]
         # self.joystick_ = pygame.joystick.Joystick(0)
-        self.camera_mode = False
-        self.player_mode = True
         self.playermenu_surface = pygame.Surface(global_.w_size)
         self.playermenu_surface.set_colorkey((0, 0, 0))
         self.playermenu_is_showing = False
@@ -106,6 +112,7 @@ class DungeonScene(Scene):
         self.playermenu_padding = 4
         self.menucursor_width = 10
         self.menucursor_height = 20
+        self.control_mode = "player"
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -145,13 +152,11 @@ class DungeonScene(Scene):
             self.camera_scroll_speed["left"] += self.camera_scroll_accel
 
     def activate_camera_mode(self):
-        self.camera_mode = True
-        self.player_mode = False
+        self.control_mode = "camera"
 
     def cancel_camera_mode(self):
         print("ssttoopp")
-        self.camera_mode = False
-        self.player_mode = True
+        self.control_mode = "player"
 
     def decelerate_camera_speed_left(self):
         if 1 < self.camera_scroll_speed["left"]:
@@ -170,10 +175,11 @@ class DungeonScene(Scene):
             self.camera_scroll_speed["down"] -= self.camera_scroll_accel
 
     def show_player_menu(self):
-        self.playermenu_is_showing = True
+        self.control_mode = "playermenu"
 
     def close_player_menu(self):
-        self.playermenu_is_showing = False
+        print("cancel")
+        self.control_mode = "player"
 
     def event(self, event):
         pass
@@ -197,7 +203,7 @@ class DungeonScene(Scene):
         #     print(hat_pos)
 
     def update(self, dt):
-        print("camera", self.camera_mode)
+        pass
         # right_stick_axis_x = self.joystick_.get_axis(2)
         # right_stick_axis_y = self.joystick_.get_axis(3)
         # if self.camera_mode:
@@ -231,7 +237,8 @@ class DungeonScene(Scene):
         # elif self.player_mode:
         #     print("player mode node")
         #     self.keyboard = self.keyboard_setups["player"]
-        #     self.keyboard.do_action_by_keyinput(pygame.K_s)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a)
 
     def draw(self, screen):
         self.map_surface.fill((0, 0, 0))
@@ -261,7 +268,7 @@ class DungeonScene(Scene):
                     (self.camera_offset_x, self.camera_offset_y,
                      global_.w_size[0], global_.w_size[1]))
         screen.blit(self.minimap_surface, (0, 0))
-        if self.playermenu_is_showing:
+        if self.control_mode == "playermenu":
             pygame.draw.rect(
                 self.playermenu_surface, (200, 200, 255),
                 (self.playermenu_x, self.playermenu_y,
