@@ -9,7 +9,7 @@ from auraboros.global_ import init  # noqa
 from auraboros.schedule import IntervalCounter
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
-from auraboros.gameinput import Keyboard, KeyboardSetupDict
+# from auraboros.gameinput import Keyboard, KeyboardSetupDict
 
 import dungeongen
 
@@ -68,34 +68,34 @@ class DungeonScene(Scene):
              self.square_size*self.map_height))
         self.minimap_surface = pygame.Surface(global_.w_size)
         self.minimap_surface.set_colorkey((0, 0, 0))
-        self.keyboard_setups = KeyboardSetupDict()
-        self.keyboard_setups["player"] = Keyboard()
-        self.keyboard_setups["player"].register_keyaction(
-            pygame.K_s,
-            0, 0, self.show_player_menu)
-        self.keyboard_setups["player"].register_keyaction(
-            pygame.K_z,
-            0, 0, self.activate_camera_mode)
-        self.keyboard_setups["camera"] = Keyboard()
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_UP,
-            0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_DOWN,
-            0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_RIGHT,
-            0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_LEFT,
-            0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_SPACE,
-            2, 4, self.generate_dungeon)
-        self.keyboard_setups["camera"].register_keyaction(
-            pygame.K_x,
-            0, 0, self.cancel_camera_mode)
-        self.keyboard = self.keyboard_setups["player"]
+        # self.keyboard_setups = KeyboardSetupDict()
+        # self.keyboard_setups["player"] = Keyboard()
+        # self.keyboard_setups["player"].register_keyaction(
+        #     pygame.K_s,
+        #     0, 0, self.show_player_menu)
+        # self.keyboard_setups["player"].register_keyaction(
+        #     pygame.K_z,
+        #     0, 0, self.activate_camera_mode)
+        # self.keyboard_setups["camera"] = Keyboard()
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_UP,
+        #     0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_DOWN,
+        #     0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_RIGHT,
+        #     0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_LEFT,
+        #     0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_SPACE,
+        #     2, 4, self.generate_dungeon)
+        # self.keyboard_setups["camera"].register_keyaction(
+        #     pygame.K_x,
+        #     0, 0, self.cancel_camera_mode)
+        # self.keyboard = self.keyboard_setups["player"]
         # self.joystick_ = pygame.joystick.Joystick(0)
         self.camera_mode = False
         self.player_mode = True
@@ -203,38 +203,38 @@ class DungeonScene(Scene):
         print("camera", self.camera_mode)
         # right_stick_axis_x = self.joystick_.get_axis(2)
         # right_stick_axis_y = self.joystick_.get_axis(3)
-        if self.camera_mode:
-            self.keyboard = self.keyboard_setups["camera"]
-            self.keyboard.do_action_by_keyinput(pygame.K_UP)
-            self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
-            self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
-            self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
-            self.keyboard.do_action_by_keyinput(pygame.K_SPACE)
-            self.keyboard.do_action_by_keyinput(pygame.K_x)
-            # if abs(right_stick_axis_y) > 0.1:
-            #     self.keyboard.deactivate_keyup(pygame.K_UP)
-            #     self.keyboard.deactivate_keyup(pygame.K_DOWN)
-            #     if right_stick_axis_y > 0:
-            #         self.go_down_camera()
-            #     if right_stick_axis_y < 0:
-            #         self.go_up_camera()
-            # else:
-            #     self.keyboard.activate_keyup(pygame.K_UP)
-            #     self.keyboard.activate_keyup(pygame.K_DOWN)
-            # if abs(right_stick_axis_x) > 0.1:
-            #     self.keyboard.deactivate_keyup(pygame.K_RIGHT)
-            #     self.keyboard.deactivate_keyup(pygame.K_LEFT)
-            #     if right_stick_axis_x > 0:
-            #         self.go_right_camera()
-            #     if right_stick_axis_x < 0:
-            #         self.go_left_camera()
-            # else:
-            #     self.keyboard.activate_keyup(pygame.K_RIGHT)
-            #     self.keyboard.activate_keyup(pygame.K_LEFT)
-        elif self.player_mode:
-            print("player mode node")
-            self.keyboard = self.keyboard_setups["player"]
-            self.keyboard.do_action_by_keyinput(pygame.K_s)
+        # if self.camera_mode:
+        #     self.keyboard = self.keyboard_setups["camera"]
+        #     self.keyboard.do_action_by_keyinput(pygame.K_UP)
+        #     self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
+        #     self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
+        #     self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
+        #     self.keyboard.do_action_by_keyinput(pygame.K_SPACE)
+        #     self.keyboard.do_action_by_keyinput(pygame.K_x)
+        #   if abs(right_stick_axis_y) > 0.1:
+        #        self.keyboard.deactivate_keyup(pygame.K_UP)
+        #        self.keyboard.deactivate_keyup(pygame.K_DOWN)
+        #        if right_stick_axis_y > 0:
+        #            self.go_down_camera()
+        #        if right_stick_axis_y < 0:
+        #            self.go_up_camera()
+        #    else:
+        #        self.keyboard.activate_keyup(pygame.K_UP)
+        #        self.keyboard.activate_keyup(pygame.K_DOWN)
+        #    if abs(right_stick_axis_x) > 0.1:
+        #        self.keyboard.deactivate_keyup(pygame.K_RIGHT)
+        #         self.keyboard.deactivate_keyup(pygame.K_LEFT)
+        #       if right_stick_axis_x > 0:
+        #            self.go_right_camera()
+        #       if right_stick_axis_x < 0:
+        #           self.go_left_camera()
+        #   else:
+        #      self.keyboard.activate_keyup(pygame.K_RIGHT)
+        #      self.keyboard.activate_keyup(pygame.K_LEFT)
+        # elif self.player_mode:
+        #     print("player mode node")
+        #     self.keyboard = self.keyboard_setups["player"]
+        #     self.keyboard.do_action_by_keyinput(pygame.K_s)
 
     def draw(self, screen):
         self.map_surface.fill((0, 0, 0))
