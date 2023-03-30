@@ -79,36 +79,30 @@ class DungeonScene(Scene):
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_DOWN,
             0, 0, self.playermenu_cursor_down)
-        self.keyboard.set_current_setup("player")
-        # self.keyboard_setups = KeyboardSetupDict()
-        # self.keyboard_setups["player"] = Keyboard()
-        # self.keyboard_setups["player"].register_keyaction(
-        #     pygame.K_s,
-        #     0, 0, self.show_player_menu)
-        # self.keyboard_setups["player"].register_keyaction(
-        #     pygame.K_z,
-        #     0, 0, self.activate_camera_mode)
-        # self.keyboard_setups["camera"] = Keyboard()
-        # self.keyboard_setups["camera"].register_keyaction(
-        #     pygame.K_UP,
-        #     0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
-        # self.keyboard_setups["camera"].register_keyaction(
-        #     pygame.K_DOWN,
-        #     0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
-        # self.keyboard_setups["camera"].register_keyaction(
-        #     pygame.K_RIGHT,
-        #     0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
-        # self.keyboard_setups["camera"].register_keyaction(
-        #     pygame.K_LEFT,
-        #     0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
-        # self.keyboard_setups["camera"].register_keyaction(
+        self.keyboard["playermenu"].register_keyaction(
+            pygame.K_z,
+            0, 0, self.playermenu_selection)
+        self.keyboard["camera"] = Keyboard()
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_UP,
+            0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_DOWN,
+            0, 0, self.go_down_camera, self.decelerate_camera_speed_down)
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_RIGHT,
+            0, 0, self.go_right_camera, self.decelerate_camera_speed_right)
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_LEFT,
+            0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
+        # self.keyboard["camera"].register_keyaction(
         #     pygame.K_SPACE,
         #     2, 4, self.generate_dungeon)
-        # self.keyboard_setups["camera"].register_keyaction(
-        #     pygame.K_x,
-        #     0, 0, self.cancel_camera_mode)
-        # self.keyboard = self.keyboard_setups["player"]
-        # self.joystick_ = pygame.joystick.Joystick(0)
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_a,
+            0, 0, self.cancel_camera_mode)
+        # self.keyboard = self.keyboard["player"]
+        self.keyboard.set_current_setup("player")
         self.playermenu_surface = pygame.Surface(global_.w_size)
         self.playermenu_surface.set_colorkey((0, 0, 0))
         self.playermenu_is_showing = False
@@ -122,7 +116,8 @@ class DungeonScene(Scene):
         self.control_mode = "player"
         self.menu_selected_index = 0
         self.menu_keys = ["inventory", "scout_camera", ]
-        self.menu_actions = {"scout_camera": lambda: None}
+        self.menu_actions = {"inventory": lambda: None,
+                             "scout_camera": self.activate_camera_mode}
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -163,10 +158,11 @@ class DungeonScene(Scene):
 
     def activate_camera_mode(self):
         self.control_mode = "camera"
+        self.keyboard.set_current_setup("camera")
 
     def cancel_camera_mode(self):
-        print("ssttoopp")
         self.control_mode = "player"
+        self.keyboard.set_current_setup("player")
 
     def decelerate_camera_speed_left(self):
         if 1 < self.camera_scroll_speed["left"]:
@@ -201,6 +197,10 @@ class DungeonScene(Scene):
         if self.menu_selected_index < len(self.menu_keys)-1:
             self.menu_selected_index += 1
 
+    def playermenu_selection(self):
+        self.menu_actions[self.menu_keys[self.menu_selected_index]]()
+        print("selection")
+
     def event(self, event):
         pass
         # right_stick_axis_x = self.joystick_.get_axis(2)
@@ -232,7 +232,7 @@ class DungeonScene(Scene):
         # right_stick_axis_x = self.joystick_.get_axis(2)
         # right_stick_axis_y = self.joystick_.get_axis(3)
         # if self.camera_mode:
-        #     self.keyboard = self.keyboard_setups["camera"]
+        #     self.keyboard = self.keyboard["camera"]
         #     self.keyboard.do_action_by_keyinput(pygame.K_UP)
         #     self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
         #     self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
@@ -261,11 +261,13 @@ class DungeonScene(Scene):
         #      self.keyboard.activate_keyup(pygame.K_LEFT)
         # elif self.player_mode:
         #     print("player mode node")
-        #     self.keyboard = self.keyboard_setups["player"]
+        #     self.keyboard = self.keyboard["player"]
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_z, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_LEFT, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_UP, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_RIGHT, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_DOWN, True)
 
     def draw(self, screen):
