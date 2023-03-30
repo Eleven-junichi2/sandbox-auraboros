@@ -69,9 +69,16 @@ class DungeonScene(Scene):
         self.keyboard["player"].register_keyaction(
             pygame.K_s,
             0, 0, self.show_player_menu)
-        self.keyboard["player"].register_keyaction(
+        self.keyboard["playermenu"] = Keyboard()
+        self.keyboard["playermenu"].register_keyaction(
             pygame.K_a,
             0, 0, self.close_player_menu)
+        self.keyboard["playermenu"].register_keyaction(
+            pygame.K_UP,
+            0, 0, self.playermenu_cursor_up)
+        self.keyboard["playermenu"].register_keyaction(
+            pygame.K_DOWN,
+            0, 0, self.playermenu_cursor_down)
         self.keyboard.set_current_setup("player")
         # self.keyboard_setups = KeyboardSetupDict()
         # self.keyboard_setups["player"] = Keyboard()
@@ -113,6 +120,9 @@ class DungeonScene(Scene):
         self.menucursor_width = 10
         self.menucursor_height = 20
         self.control_mode = "player"
+        self.menu_selected_index = 0
+        self.menu_keys = ["inventory", "scout_camera", ]
+        self.menu_actions = {"scout_camera": lambda: None}
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -176,10 +186,20 @@ class DungeonScene(Scene):
 
     def show_player_menu(self):
         self.control_mode = "playermenu"
+        self.keyboard.set_current_setup("playermenu")
 
     def close_player_menu(self):
         print("cancel")
         self.control_mode = "player"
+        self.keyboard.set_current_setup("player")
+
+    def playermenu_cursor_up(self):
+        if 0 < self.menu_selected_index:
+            self.menu_selected_index -= 1
+
+    def playermenu_cursor_down(self):
+        if self.menu_selected_index < len(self.menu_keys)-1:
+            self.menu_selected_index += 1
 
     def event(self, event):
         pass
@@ -203,6 +223,11 @@ class DungeonScene(Scene):
         #     print(hat_pos)
 
     def update(self, dt):
+        if self.control_mode == "player":
+            pass
+        elif self.control_mode == "playermenu":
+            print(self.menu_selected_index)
+            pass
         pass
         # right_stick_axis_x = self.joystick_.get_axis(2)
         # right_stick_axis_y = self.joystick_.get_axis(3)
@@ -237,8 +262,11 @@ class DungeonScene(Scene):
         # elif self.player_mode:
         #     print("player mode node")
         #     self.keyboard = self.keyboard_setups["player"]
-        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s)
-        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_z, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_UP, True)
+        self.keyboard.current_setup.do_action_by_keyinput(pygame.K_DOWN, True)
 
     def draw(self, screen):
         self.map_surface.fill((0, 0, 0))
