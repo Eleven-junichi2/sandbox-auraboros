@@ -3,21 +3,18 @@ import sys
 
 import pygame
 
+from auraboros import global_  # noqa
 from auraboros.gamescene import Scene, SceneManager
-from auraboros import global_
-from auraboros.global_ import init  # noqa
-from auraboros.schedule import IntervalCounter
 from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
+from auraboros import engine
 # from auraboros.gameinput import Keyboard, KeyboardSetupDict
 
 import dungeongen
 
 AssetFilePath.set_asset_root(Path(sys.argv[0]).parent / "assets")
 
-pygame.init()
-
-clock = pygame.time.Clock()
+engine.init(pixel_scale=1)
 
 textfactory = TextSurfaceFactory()
 textfactory.register_font(
@@ -288,25 +285,32 @@ class DungeonScene(Scene):
             screen.blit(self.playermenu_surface, (0, 0))
 
 
-def run(fps_num=60):
-    global fps
-    fps = fps_num
-    running = True
-    scene_manager = SceneManager()
-    scene_manager.push(TitleMenuScene(scene_manager))
-    scene_manager.push(DungeonScene(scene_manager))
-    scene_manager.transition_to(1)
-    while running:
-        dt = clock.tick(fps)/1000  # dt means delta time
+# def run(fps_num=60):
+#     global fps
+#     fps = fps_num
+#     running = True
+#     scene_manager = SceneManager()
+#     scene_manager.push(TitleMenuScene(scene_manager))
+#     scene_manager.push(DungeonScene(scene_manager))
+#     scene_manager.transition_to(1)
+#     while running:
+#         dt = clock.tick(fps)/1000  # dt means delta time
 
-        global_.screen.fill((0, 0, 0))
-        for event in pygame.event.get():
-            running = scene_manager.event(event)
+#         global_.screen.fill((0, 0, 0))
+#         for event in pygame.event.get():
+#             running = scene_manager.event(event)
 
-        scene_manager.update(dt)
-        scene_manager.draw(global_.screen)
-        pygame.transform.scale(global_.screen, global_.w_size_unscaled,
-                               pygame.display.get_surface())
-        pygame.display.update()
-        IntervalCounter.tick(dt)
-    pygame.quit()
+#         scene_manager.update(dt)
+#         scene_manager.draw(global_.screen)
+#         pygame.transform.scale(global_.screen, global_.w_size_unscaled,
+#                                pygame.display.get_surface())
+#         pygame.display.update()
+#         IntervalCounter.tick(dt)
+#     pygame.quit()
+
+
+scene_manager = SceneManager()
+scene_manager.push(DungeonScene(scene_manager))
+
+if __name__ == "__main__":
+    engine.run(scene_manager=scene_manager)
