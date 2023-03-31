@@ -9,6 +9,7 @@ from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
 from auraboros import engine
 from auraboros.gameinput import Keyboard
+from auraboros.ui import GameMenuSystem, GameMenuUI
 
 import dungeongen
 
@@ -69,19 +70,24 @@ class DungeonScene(Scene):
         self.keyboard["player"].register_keyaction(
             pygame.K_s,
             0, 0, self.show_player_menu)
+        menusystem = GameMenuSystem()
+        menusystem.add_menu_item(
+            "inventory", lambda: None, "inventory")
+        menusystem.add_menu_item(
+            "scout_camera", self.activate_camera_mode, "scout")
         self.keyboard["playermenu"] = Keyboard()
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_a,
             0, 0, self.close_player_menu)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_UP,
-            0, 0, self.playermenu_cursor_up)
+            0, 0, menusystem.menu_cursor_up)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_DOWN,
-            0, 0, self.playermenu_cursor_down)
+            0, 0, menusystem.menu_cursor_down)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_z,
-            0, 0, self.playermenu_selection)
+            0, 0, menusystem.do_selected_action)
         self.keyboard["camera"] = Keyboard()
         self.keyboard["camera"].register_keyaction(
             pygame.K_UP,
@@ -95,29 +101,20 @@ class DungeonScene(Scene):
         self.keyboard["camera"].register_keyaction(
             pygame.K_LEFT,
             0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
+        self.playermenuui = GameMenuUI(menusystem, textfactory)
+        self.playermenuui.pos = [
+            global_.w_size[0]//2-self.playermenuui.size[0]//2,
+            global_.w_size[1]//2-self.playermenuui.size[1]//2]
         # self.keyboard["camera"].register_keyaction(
         #     pygame.K_SPACE,
         #     2, 4, self.generate_dungeon)
         self.keyboard["camera"].register_keyaction(
             pygame.K_a,
             0, 0, self.cancel_camera_mode)
-        # self.keyboard = self.keyboard["player"]
         self.keyboard.set_current_setup("player")
         self.playermenu_surface = pygame.Surface(global_.w_size)
         self.playermenu_surface.set_colorkey((0, 0, 0))
-        self.playermenu_is_showing = False
-        self.playermenu_x = 32
-        self.playermenu_y = 32
-        self.playermenu_width = 32*4
-        self.playermenu_height = 32*6
-        self.playermenu_padding = 4
-        self.menucursor_width = 10
-        self.menucursor_height = 20
         self.control_mode = "player"
-        self.menu_selected_index = 0
-        self.menu_keys = ["inventory", "scout_camera", ]
-        self.menu_actions = {"inventory": lambda: None,
-                             "scout_camera": self.activate_camera_mode}
 
     def generate_dungeon(self):
         self.map_width = 56
@@ -189,18 +186,6 @@ class DungeonScene(Scene):
         self.control_mode = "player"
         self.keyboard.set_current_setup("player")
 
-    def playermenu_cursor_up(self):
-        if 0 < self.menu_selected_index:
-            self.menu_selected_index -= 1
-
-    def playermenu_cursor_down(self):
-        if self.menu_selected_index < len(self.menu_keys)-1:
-            self.menu_selected_index += 1
-
-    def playermenu_selection(self):
-        self.menu_actions[self.menu_keys[self.menu_selected_index]]()
-        print("selection")
-
     def event(self, event):
         pass
         # right_stick_axis_x = self.joystick_.get_axis(2)
@@ -226,7 +211,6 @@ class DungeonScene(Scene):
         if self.control_mode == "player":
             pass
         elif self.control_mode == "playermenu":
-            print(self.menu_selected_index)
             pass
         pass
         # right_stick_axis_x = self.joystick_.get_axis(2)
@@ -299,51 +283,8 @@ class DungeonScene(Scene):
                      global_.w_size[0], global_.w_size[1]))
         screen.blit(self.minimap_surface, (0, 0))
         if self.control_mode == "playermenu":
-            pygame.draw.rect(
-                self.playermenu_surface, (200, 200, 255),
-                (self.playermenu_x, self.playermenu_y,
-                 self.playermenu_width, self.playermenu_height), 1)
-            textfactory.render(
-                "scout_camera", self.playermenu_surface,
-                (self.menucursor_width*2+self.playermenu_x +
-                 self.playermenu_padding,
-                 self.playermenu_y+self.playermenu_padding))
-            pygame.draw.polygon(
-                self.playermenu_surface, (255, 255, 255),
-                ((self.playermenu_x+self.playermenu_padding,
-                  self.playermenu_y+self.playermenu_padding),
-                 (self.playermenu_x +
-                  self.playermenu_padding+self.menucursor_width,
-                  self.playermenu_y +
-                    self.playermenu_padding+self.menucursor_height//2),
-                 (self.playermenu_x+self.playermenu_padding,
-                  self.playermenu_y +
-                  self.playermenu_padding+self.menucursor_height)))
+            self.playermenuui.draw(self.playermenu_surface)
             screen.blit(self.playermenu_surface, (0, 0))
-
-
-# def run(fps_num=60):
-#     global fps
-#     fps = fps_num
-#     running = True
-#     scene_manager = SceneManager()
-#     scene_manager.push(TitleMenuScene(scene_manager))
-#     scene_manager.push(DungeonScene(scene_manager))
-#     scene_manager.transition_to(1)
-#     while running:
-#         dt = clock.tick(fps)/1000  # dt means delta time
-
-#         global_.screen.fill((0, 0, 0))
-#         for event in pygame.event.get():
-#             running = scene_manager.event(event)
-
-#         scene_manager.update(dt)
-#         scene_manager.draw(global_.screen)
-#         pygame.transform.scale(global_.screen, global_.w_size_unscaled,
-#                                pygame.display.get_surface())
-#         pygame.display.update()
-#         IntervalCounter.tick(dt)
-#     pygame.quit()
 
 
 scene_manager = SceneManager()
