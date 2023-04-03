@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "01f5158f10d403ab1d4726e731fc38bc31efb05a972a0806fc0210afcb488e36"
+            "sha256": "33f06c7978568b09b7af3ddd70148496e2c239703c2facbd28fd7ac9a5c57b47"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "auraboros": {
             "hashes": [
-                "sha256:a4865f0ef8dad448469897bb9013fae7d1a6a02bacb4b15030d7e35a1b8cc0d7",
-                "sha256:e2df3e6a0bb5ddc8744750e8abe91d23ae9baf6be0e91e2ffbf88c5324a0e61c"
+                "sha256:b83de21e1769a7e5b3f41c35348be498354d610f295e75d71ba66b19b52710d1",
+                "sha256:edf70964f5525eb8cc2aa3b0efa8342e3c79bccae70e8ed52e052df47ad0b151"
             ],
             "index": "pypi",
-            "version": "==0.7.0a0"
+            "version": "==0.8.0a0"
         },
         "pygame": {
             "hashes": [

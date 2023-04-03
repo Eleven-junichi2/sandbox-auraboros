@@ -9,7 +9,7 @@ from auraboros.gametext import TextSurfaceFactory
 from auraboros.utilities import AssetFilePath
 from auraboros import engine
 from auraboros.gameinput import Keyboard
-from auraboros.ui import GameMenuSystem, GameMenuUI
+from auraboros.ui import GameMenuSystem, GameMenuUI, MsgWindow
 
 import dungeongen
 
@@ -59,7 +59,7 @@ class DungeonScene(Scene):
         self.camera_offset_x = 0
         self.camera_offset_y = 0
         self.camera_scroll_speed = {"left": 1, "up": 1, "right": 1, "down": 1}
-        self.camera_scroll_accel = 1  # constant
+        self.camera_scroll_accel = 1
         self.camera_scroll_max_speed = 24
         self.map_surface = pygame.Surface(
             (self.square_size*self.map_width,
@@ -81,14 +81,23 @@ class DungeonScene(Scene):
             0, 0, self.close_player_menu)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_UP,
-            0, 0, menusystem.menu_cursor_up)
+            0, 8, menusystem.menu_cursor_up)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_DOWN,
-            0, 0, menusystem.menu_cursor_down)
+            0, 8, menusystem.menu_cursor_down)
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_z,
             0, 0, menusystem.do_selected_action)
+        self.playermenuui = GameMenuUI(menusystem, textfactory)
+        self.playermenuui.padding = 4
+        self.playermenu_surface = pygame.Surface(global_.w_size)
+        self.playermenu_surface.set_colorkey((0, 0, 0))
+        self.msgbox = MsgWindow(textfactory.font())
+        self.msgbox.padding = 4
         self.keyboard["camera"] = Keyboard()
+        self.keyboard["camera"].register_keyaction(
+            pygame.K_a,
+            0, 0, self.cancel_camera_mode)
         self.keyboard["camera"].register_keyaction(
             pygame.K_UP,
             0, 0, self.go_up_camera, self.decelerate_camera_speed_up)
@@ -101,19 +110,7 @@ class DungeonScene(Scene):
         self.keyboard["camera"].register_keyaction(
             pygame.K_LEFT,
             0, 0, self.go_left_camera, self.decelerate_camera_speed_left)
-        self.playermenuui = GameMenuUI(menusystem, textfactory)
-        self.playermenuui.pos = [
-            global_.w_size[0]//2-self.playermenuui.size[0]//2,
-            global_.w_size[1]//2-self.playermenuui.size[1]//2]
-        # self.keyboard["camera"].register_keyaction(
-        #     pygame.K_SPACE,
-        #     2, 4, self.generate_dungeon)
-        self.keyboard["camera"].register_keyaction(
-            pygame.K_a,
-            0, 0, self.cancel_camera_mode)
         self.keyboard.set_current_setup("player")
-        self.playermenu_surface = pygame.Surface(global_.w_size)
-        self.playermenu_surface.set_colorkey((0, 0, 0))
         self.control_mode = "player"
 
     def generate_dungeon(self):
@@ -208,11 +205,13 @@ class DungeonScene(Scene):
         #     print(hat_pos)
 
     def update(self, dt):
+        self.playermenuui.set_pos_to_center()
         if self.control_mode == "player":
-            pass
+            self.msgbox.text = "(press s for player menu)"
         elif self.control_mode == "playermenu":
-            pass
-        pass
+            self.msgbox.text = "(press a to close menu)"
+        elif self.control_mode == "camera":
+            self.msgbox.text = "control camera with ←↑→↓ (press a to cancel)"
         # right_stick_axis_x = self.joystick_.get_axis(2)
         # right_stick_axis_y = self.joystick_.get_axis(3)
         # if self.camera_mode:
@@ -285,6 +284,7 @@ class DungeonScene(Scene):
         if self.control_mode == "playermenu":
             self.playermenuui.draw(self.playermenu_surface)
             screen.blit(self.playermenu_surface, (0, 0))
+        self.msgbox.draw(screen)
 
 
 scene_manager = SceneManager()
