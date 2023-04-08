@@ -11,7 +11,7 @@ from auraboros import engine
 from auraboros.gameinput import Keyboard
 from auraboros.ui import GameMenuSystem, GameMenuUI, MsgWindow
 
-import dungeongen
+from dungeongen2 import GameDungeonMap, print_2dlist, int_to_str_in_2dlist
 
 AssetFilePath.set_asset_root(Path(sys.argv[0]).parent / "assets")
 
@@ -62,8 +62,8 @@ class DungeonScene(Scene):
         self.camera_scroll_accel = 1
         self.camera_scroll_max_speed = 24
         self.map_surface = pygame.Surface(
-            (self.square_size*self.map_width,
-             self.square_size*self.map_height))
+            (self.square_size*self.dungeon_map.width,
+             self.square_size*self.dungeon_map.height))
         self.minimap_surface = pygame.Surface(global_.w_size)
         self.minimap_surface.set_colorkey((0, 0, 0))
         self.keyboard["player"] = Keyboard()
@@ -74,7 +74,7 @@ class DungeonScene(Scene):
         menusystem.add_menu_item(
             "inventory", lambda: None, "inventory")
         menusystem.add_menu_item(
-            "scout_camera", self.activate_camera_mode, "scout")
+            "scout_camera", self.activate_camera_mode, text="scout")
         self.keyboard["playermenu"] = Keyboard()
         self.keyboard["playermenu"].register_keyaction(
             pygame.K_a,
@@ -114,21 +114,10 @@ class DungeonScene(Scene):
         self.control_mode = "player"
 
     def generate_dungeon(self):
-        self.map_width = 56
-        self.map_height = 34
-        dungeon_area_data, area_list = dungeongen.split_map_to_area(
-            dungeongen.generate_mapdata(
-                self.map_width, self.map_height, 0), 4)
-        dungeon_area_data, room_list = dungeongen.make_room_in_area_map(
-            dungeon_area_data, area_list)
-        dungeongen.make_path_between_areas(
-            dungeon_area_data, area_list, room_list, 5)
-        self.map_data = dungeongen.convert_area_map_to_mapdata(
-            dungeon_area_data)
-        conversion_dict = {0: " ", 1: ".", 2: "#", 3: "~", 4: ":"}
-        map_to_display = dungeongen.convert_map_to_display(
-            self.map_data, conversion_dict)
-        dungeongen.print_matrix(map_to_display)
+        self.dungeon_map = GameDungeonMap(56, 34)
+        self.dungeon_map.fill_terrain_map(
+            1, 1, self.dungeon_map.width-2, self.dungeon_map.height-2, 1)
+        print_2dlist(int_to_str_in_2dlist(self.dungeon_map.terrain_map))
 
     def go_up_camera(self):
         self.camera_offset_y -= self.camera_scroll_speed["up"]
@@ -259,10 +248,10 @@ class DungeonScene(Scene):
         self.playermenu_surface.fill((0, 0, 0))
         pygame.draw.rect(
             self.map_surface, (255, 255, 255),
-            (0, 0, self.square_size*self.map_width,
-             self.square_size*self.map_height,),
+            (0, 0, self.square_size*self.dungeon_map.width,
+             self.square_size*self.dungeon_map.height,),
             1)
-        for y, line in enumerate(self.map_data):
+        for y, line in enumerate(self.dungeon_map.terrain_map):
             for x, square in enumerate(line):
                 if square == 1 or square == 4:
                     pygame.draw.rect(
