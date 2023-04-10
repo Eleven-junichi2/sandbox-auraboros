@@ -10,7 +10,9 @@
 # import traceback
 
 def generate_2dlist(size_1d, size_2d, item) -> list[list]:
-    """Return two dimensional list filled given item."""
+    """
+    Return two dimensional list filled given item.
+    """
     return [[item for _ in range(size_2d)] for _ in range(size_1d)]
 
 
