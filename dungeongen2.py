@@ -96,12 +96,16 @@ class GameDungeonMap:
         # self.area_map = []
         self._init_area_map()
         self._init_terrain_map()
+        self._init_object_type_map()
 
     def _init_area_map(self):
         self.area_map = generate_2dlist(self.height, self.width, 0)
 
     def _init_terrain_map(self):
         self.terrain_map = generate_2dlist(self.height, self.width, 0)
+
+    def _init_object_type_map(self):
+        self.object_type_map = generate_2dlist(self.height, self.width, 0)
 
     def fill_area_map(
             self, from_x: int, from_y: int,

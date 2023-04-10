@@ -12,8 +12,9 @@ from auraboros.utilities import AssetFilePath
 from auraboros import engine
 from auraboros.gameinput import Keyboard
 from auraboros.ui import GameMenuSystem, GameMenuUI, MsgWindow
+from auraboros.animation import AnimationImage, SpriteSheet
 
-from dungeongen2 import GameDungeonMap, print_2dlist, int_to_str_in_2dlist
+from dungeongen2 import GameDungeonMap
 
 AssetFilePath.set_asset_root(Path(sys.argv[0]).parent / "assets")
 
@@ -33,22 +34,12 @@ textfactory.register_font(
         AssetFilePath.font("k8x12/k8x12S.ttf"), 24))
 
 
-# def prepare_filedialog():
-#     with tk.Tk() as root:
-#         root.withdraw()
-
-
-class TitleMenuScene(Scene):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        textfactory.set_current_font("misaki_gothic")
-        textfactory.register_text("hello_world", "Hello, World!")
-
-    def update(self, dt):
-        pass
-
-    def draw(self, screen):
-        textfactory.render("hello_world", screen, (16, 0))
+class FighterIdle(AnimationImage):
+    def __init__(self):
+        super().__init__()
+        self.sprite_sheet = SpriteSheet(AssetFilePath.img("fighter_a.png"))
+        self.anim_frames: list[pygame.surface.Surface] = [
+            self.sprite_sheet.image_by_area(0, 22 * 2, 22, 22), ]
 
 
 class DungeonScene(Scene):
@@ -82,11 +73,19 @@ class DungeonScene(Scene):
         menusystem.add_menu_item(
             "edit_terrain_map",
             lambda: self.switch_layer_of_map_data_to_edit("terrain"),
-            text="Edit terrain_map")
+            text="Edit terrain")
         menusystem.add_menu_item(
             "edit_area_map",
             lambda: self.switch_layer_of_map_data_to_edit("area"),
-            text="Edit area_map")
+            text="Edit area")
+        menusystem.add_menu_item(
+            "object_type_map",
+            lambda: self.switch_layer_of_map_data_to_edit("object_type"),
+            text="Edit object_type")
+        menusystem.add_menu_item(
+            "test_game",
+            lambda: None,
+            text="|> Run dungeon")
         self.keyboard["menu"] = Keyboard()
         self.keyboard["menu"].register_keyaction(
             pygame.K_a,
@@ -136,6 +135,7 @@ class DungeonScene(Scene):
             data_to_restore = {}
             data_to_restore["terrain"] = self.dungeon_map.terrain_map
             data_to_restore["area"] = self.dungeon_map.area_map
+            data_to_restore["object_type"] = self.dungeon_map.object_type_map
             with open(file_path, 'w') as f:
                 json.dump(data_to_restore, f)
 
@@ -149,8 +149,12 @@ class DungeonScene(Scene):
                     data_to_restore = json.load(f)
                     self.dungeon_map.terrain_map = data_to_restore["terrain"]
                     self.dungeon_map.area_map = data_to_restore["area"]
+                    self.dungeon_map.object_type_map =\
+                        data_to_restore["object_type"]
             except json.JSONDecodeError:
                 messagebox.showerror("Error", "Failed to load map data.")
+            except KeyError as e:
+                messagebox.showerror("Error", f"Failed to load {e}")
 
     def generate_dungeon(self):
         self.dungeon_map = GameDungeonMap(56, 34)
@@ -160,12 +164,16 @@ class DungeonScene(Scene):
             self.current_layer_to_edit = "terrain"
         if layer_to_switch == "area":
             self.current_layer_to_edit = "area"
+        if layer_to_switch == "object_type":
+            self.current_layer_to_edit = "object_type"
 
     def map_data_by_current_layer(self) -> list[list]:
         if self.current_layer_to_edit == "terrain":
             map_data = self.dungeon_map.terrain_map
         elif self.current_layer_to_edit == "area":
             map_data = self.dungeon_map.area_map
+        elif self.current_layer_to_edit == "object_type":
+            map_data = self.dungeon_map.object_type_map
         return map_data
 
     def edit_map_data_of_current_layer(self, x, y, square):
@@ -173,6 +181,8 @@ class DungeonScene(Scene):
             self.dungeon_map.terrain_map[y][x] = square
         elif self.current_layer_to_edit == "area":
             self.dungeon_map.area_map[y][x] = square
+        elif self.current_layer_to_edit == "object_type":
+            self.dungeon_map.object_type_map[y][x] = square
 
     def go_up_camera(self):
         self.camera_offset_y -= self.camera_scroll_speed["up"]
@@ -345,11 +355,13 @@ class DungeonScene(Scene):
         self.map_surface.fill((0, 0, 0))
         self.minimap_surface.fill((0, 0, 0))
         self.playermenu_surface.fill((0, 0, 0))
+        # draw map surface frame
         pygame.draw.rect(
             self.map_surface, (255, 255, 255),
             (0, 0, self.square_size*self.dungeon_map.width,
              self.square_size*self.dungeon_map.height,),
             1)
+        # draw squares
         for y, line in enumerate(self.map_data_by_current_layer()):
             for x, square in enumerate(line):
                 if square > 0:
