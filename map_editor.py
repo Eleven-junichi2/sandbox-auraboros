@@ -46,8 +46,8 @@ class DungeonScene(Scene):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # textfactory.set_current_font("misaki_gothic")
-        # textfactory.set_current_font("ayu18mincho_9x18gm")
-        textfactory.set_current_font("k8x12S")
+        textfactory.set_current_font("ayu18mincho_9x18gm")
+        # textfactory.set_current_font("k8x12S")
         self.generate_dungeon()
         self.minimap_x = global_.w_size[0] // 3
         self.minimap_y = global_.w_size[1] // 3
@@ -92,10 +92,10 @@ class DungeonScene(Scene):
             0, 0, self.activate_edit_mode)
         self.keyboard["menu"].register_keyaction(
             pygame.K_UP,
-            0, 8, menusystem.menu_cursor_up)
+            0, 111, menusystem.menu_cursor_up)
         self.keyboard["menu"].register_keyaction(
             pygame.K_DOWN,
-            0, 8, menusystem.menu_cursor_down)
+            0, 111, menusystem.menu_cursor_down)
         self.keyboard["menu"].register_keyaction(
             pygame.K_z,
             0, 0, menusystem.do_selected_action)
@@ -273,26 +273,8 @@ class DungeonScene(Scene):
                 self.camera_offset_x -= dx
                 self.camera_offset_y -= dy
                 self.drag_start_pos = event.pos
-        # right_stick_axis_x = self.joystick_.get_axis(2)
-        # right_stick_axis_y = self.joystick_.get_axis(3)
-        # if event.type == pygame.JOYAXISMOTION:
-        #     if abs(right_stick_axis_x) > 0.1 or\
-        #             abs(right_stick_axis_y) > 0.1:
-        #         self.camera_mode = True
-        #         self.close_player_menu()
-        #     # if right_stick_axis_y > 0:
-        #     #     self.go_down_camera()
-        #   # r_stick_y = self.joystick_.get_axis(3)
-        #     # print("r stick x:", right_stick_axis_x)
-        # elif event.type == pygame.JOYBUTTONDOWN:
-        #     print(event.button)
-        # elif event.type == pygame.JOYBUTTONUP:
-        #     print(event.button)
-        # elif event.type == pygame.JOYHATMOTION:
-        #     hat_pos = self.joystick_.get_hat(0)
-        #     print(hat_pos)
 
-    def update(self, dt):
+    def update(self):
         self.menuui.set_pos_to_center()
         if self.control_mode == "menu":
             self.msgbox.text = "(press a to close menu)"
@@ -301,39 +283,6 @@ class DungeonScene(Scene):
                 "(press s for menu) | " + \
                 str(self.current_layer_to_edit) + " | " + \
                 str(self.pen_square_id)
-        # right_stick_axis_x = self.joystick_.get_axis(2)
-        # right_stick_axis_y = self.joystick_.get_axis(3)
-        # if self.camera_mode:
-        #     self.keyboard = self.keyboard["camera"]
-        #     self.keyboard.do_action_by_keyinput(pygame.K_UP)
-        #     self.keyboard.do_action_by_keyinput(pygame.K_DOWN)
-        #     self.keyboard.do_action_by_keyinput(pygame.K_RIGHT)
-        #     self.keyboard.do_action_by_keyinput(pygame.K_LEFT)
-        #     self.keyboard.do_action_by_keyinput(pygame.K_SPACE)
-        #     self.keyboard.do_action_by_keyinput(pygame.K_x)
-        #   if abs(right_stick_axis_y) > 0.1:
-        #        self.keyboard.deactivate_keyup(pygame.K_UP)
-        #        self.keyboard.deactivate_keyup(pygame.K_DOWN)
-        #        if right_stick_axis_y > 0:
-        #            self.go_down_camera()
-        #        if right_stick_axis_y < 0:
-        #            self.go_up_camera()
-        #    else:
-        #        self.keyboard.activate_keyup(pygame.K_UP)
-        #        self.keyboard.activate_keyup(pygame.K_DOWN)
-        #    if abs(right_stick_axis_x) > 0.1:
-        #        self.keyboard.deactivate_keyup(pygame.K_RIGHT)
-        #         self.keyboard.deactivate_keyup(pygame.K_LEFT)
-        #       if right_stick_axis_x > 0:
-        #            self.go_right_camera()
-        #       if right_stick_axis_x < 0:
-        #           self.go_left_camera()
-        #   else:
-        #      self.keyboard.activate_keyup(pygame.K_RIGHT)
-        #      self.keyboard.activate_keyup(pygame.K_LEFT)
-        # elif self.player_mode:
-        #     print("player mode node")
-        #     self.keyboard = self.keyboard["player"]
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_z, True)
@@ -391,24 +340,6 @@ class DungeonScene(Scene):
             self.menuui.draw(self.playermenu_surface)
             screen.blit(self.playermenu_surface, (0, 0))
         self.msgbox.draw(screen)
-        # pygame.draw.rect(
-        #     screen, (0, 255, 255),
-        #     (pygame.mouse.get_pos()[0]-self.square_size//3,
-        #      pygame.mouse.get_pos()[1]-self.square_size//3,
-        #      self.square_size,
-        #      self.square_size), 1)
-        # if 0+self.camera_offset_x <= pygame.mouse.get_pos()[0] \
-        #         <= self.square_size+self.camera_offset_x:
-        #     pygame.draw.rect(
-        #         screen, (255, 255, 0),
-        #         (0,
-        #          0,
-        #          self.square_size,
-        #          self.square_size), 1)
-        # print("camera_pos", self.camera_offset_x, self.camera_offset_y)
-        # print("mouse_pos", pygame.mouse.get_pos())
-        # print("selected_x", pygame.mouse.get_pos()[0] // self.square_size)
-        # print("selected_y", pygame.mouse.get_pos()[1] // self.square_size)
         if self.is_pos_on_map(pygame.mouse.get_pos()):
             pygame.draw.rect(
                 screen, (0, 255, 255),
