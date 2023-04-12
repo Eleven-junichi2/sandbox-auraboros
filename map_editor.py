@@ -1,3 +1,4 @@
+from math import sqrt
 from pathlib import Path
 from tkinter import filedialog, messagebox
 import sys
@@ -8,11 +9,12 @@ import pygame
 from auraboros import global_  # noqa
 from auraboros.gamescene import Scene, SceneManager
 from auraboros.gametext import TextSurfaceFactory
-from auraboros.utilities import AssetFilePath
+from auraboros.utilities import AssetFilePath, Arrow
 from auraboros import engine
 from auraboros.gameinput import Keyboard
 from auraboros.ui import GameMenuSystem, GameMenuUI, MsgWindow
 from auraboros.animation import AnimationImage, SpriteSheet
+from auraboros.entity import Entity
 
 from dungeongen2 import GameDungeonMap
 
@@ -34,12 +36,45 @@ textfactory.register_font(
         AssetFilePath.font("k8x12/k8x12S.ttf"), 24))
 
 
-class FighterIdle(AnimationImage):
+class PlayerIdle(AnimationImage):
     def __init__(self):
         super().__init__()
-        self.sprite_sheet = SpriteSheet(AssetFilePath.img("fighter_a.png"))
+        self.sprite_sheet = SpriteSheet(AssetFilePath.img("charchip3.png"))
         self.anim_frames: list[pygame.surface.Surface] = [
-            self.sprite_sheet.image_by_area(0, 22 * 2, 22, 22), ]
+            self.sprite_sheet.image_by_area(0, 0, 32, 32), ]
+
+
+class Player(Entity):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.image = PlayerIdle().image
+        self.x = 0
+        self.y = 0
+
+    def move_by_arrow(self):
+        self.is_moving = True
+        # diagonal movement
+        if ((self.arrow_of_move.is_up and
+            self.arrow_of_move.is_right) or
+            (self.arrow_of_move.is_up and
+            self.arrow_of_move.is_left) or
+            (self.arrow_of_move.is_down and
+            self.arrow_of_move.is_right) or
+            (self.arrow_of_move.is_down and
+                self.arrow_of_move.is_left)):
+            # Correct the speed of diagonal movement
+            movement_speed = self.movement_speed / sqrt(2)
+        else:
+            movement_speed = self.movement_speed
+        movement_speed = movement_speed
+        if self.arrow_of_move.is_up:
+            self.y -= movement_speed
+        if self.arrow_of_move.is_down:
+            self.y += movement_speed
+        if self.arrow_of_move.is_right:
+            self.x += movement_speed
+        if self.arrow_of_move.is_left:
+            self.x -= movement_speed
 
 
 class DungeonScene(Scene):
@@ -84,7 +119,7 @@ class DungeonScene(Scene):
             text="Edit object_type")
         menusystem.add_menu_item(
             "test_game",
-            lambda: None,
+            lambda: self.activate_test_play_mode(),
             text="|> Run dungeon")
         self.keyboard["menu"] = Keyboard()
         self.keyboard["menu"].register_keyaction(
@@ -126,6 +161,37 @@ class DungeonScene(Scene):
         self.calculate_square_selector_pos()
         self.pen_square_id = 0
         self.dragging_camera = False
+        self.player = Player()
+        self.player.movement_speed = self.square_size
+        self.keyboard["player"] = Keyboard()
+        self.keyboard["player"].register_keyaction(
+            pygame.K_LEFT,
+            0, 3333,
+            lambda: self.let_player_move(Arrow.left),
+            lambda: self.cancel_player_move(Arrow.left))
+        self.keyboard["player"].register_keyaction(
+            pygame.K_UP,
+            0, 3333,
+            lambda: self.let_player_move(Arrow.up),
+            lambda: self.cancel_player_move(Arrow.up))
+        self.keyboard["player"].register_keyaction(
+            pygame.K_RIGHT,
+            0, 3333,
+            lambda: self.let_player_move(Arrow.right),
+            lambda: self.cancel_player_move(Arrow.right))
+        self.keyboard["player"].register_keyaction(
+            pygame.K_DOWN,
+            0, 3333,
+            lambda: self.let_player_move(Arrow.down),
+            lambda: self.cancel_player_move(Arrow.down))
+
+    def let_player_move(self, direction: Arrow):
+        self.player.arrow_of_move.set(direction)
+        self.player.is_moving = True
+
+    def cancel_player_move(self, direction: Arrow):
+        self.player.arrow_of_move.unset(direction)
+        self.player.is_moving = False
 
     def save_map_data_with_filedialog(self):
         file_path = filedialog.asksaveasfilename(
@@ -149,8 +215,8 @@ class DungeonScene(Scene):
                     data_to_restore = json.load(f)
                     self.dungeon_map.terrain_map = data_to_restore["terrain"]
                     self.dungeon_map.area_map = data_to_restore["area"]
-                    self.dungeon_map.object_type_map =\
-                        data_to_restore["object_type"]
+                    self.dungeon_map.object_type_map = data_to_restore[
+                        "object_type"]
             except json.JSONDecodeError:
                 messagebox.showerror("Error", "Failed to load map data.")
             except KeyError as e:
@@ -158,6 +224,10 @@ class DungeonScene(Scene):
 
     def generate_dungeon(self):
         self.dungeon_map = GameDungeonMap(56, 34)
+
+    def activate_test_play_mode(self):
+        self.control_mode = "test_play"
+        self.keyboard.set_current_setup("player")
 
     def switch_layer_of_map_data_to_edit(self, layer_to_switch: str):
         if layer_to_switch == "terrain":
@@ -279,9 +349,9 @@ class DungeonScene(Scene):
         if self.control_mode == "menu":
             self.msgbox.text = "(press a to close menu)"
         elif self.control_mode == "edit":
-            self.msgbox.text = "control camera with ←↑→↓" + \
-                "(press s for menu) | " + \
-                str(self.current_layer_to_edit) + " | " + \
+            self.msgbox.text = "control camera with ←↑→↓" +\
+                "(press s for menu) | " +\
+                str(self.current_layer_to_edit) + " | " +\
                 str(self.pen_square_id)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_s, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_a, True)
@@ -290,6 +360,8 @@ class DungeonScene(Scene):
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_UP, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_RIGHT, True)
         self.keyboard.current_setup.do_action_by_keyinput(pygame.K_DOWN, True)
+        if self.player.is_moving:
+            self.player.move_by_arrow()
 
     def is_pos_on_map(self, pos) -> bool:
         map_x = pos[0] + self.camera_offset_x
@@ -332,6 +404,9 @@ class DungeonScene(Scene):
                          self.minimap_y+self.minimap_square_size*y,
                          self.minimap_square_size-1,
                          self.minimap_square_size-1), 1)
+        if self.control_mode == "test_play":
+            self.map_surface.blit(
+                self.player.image, (self.player.x, self.player.y))
         screen.blit(self.map_surface, (0, 0),
                     (self.camera_offset_x, self.camera_offset_y,
                      global_.w_size[0], global_.w_size[1]))
