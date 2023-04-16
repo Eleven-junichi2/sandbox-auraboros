@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-auraboros = "==0.11.1a0"
 pygame = "*"
 moderngl = "*"
+auraboros = "*"
 
 [dev-packages]
 flake8 = "*"
