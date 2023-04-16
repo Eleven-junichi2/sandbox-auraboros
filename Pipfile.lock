@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d0b190ccacdd825000479f4133d44404bca5853f69a9baf907150c8545dee9a0"
+            "sha256": "85572ec95fc1f5fea215896dd4d6fea67bd0768567b60eba3007642fdf5517b7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "auraboros": {
             "hashes": [
-                "sha256:b7e86d70e8e24e07fc34c70a41482cc777b83b7e36c073c95d11b02222e5e0e8",
-                "sha256:c13ed2a6ad00ec136f448c934efd51fcef4bd45ae18887c62b696ed8cd74d2dd"
+                "sha256:8143e933eb7398025d857a2acccc59702504998265fe206a5c1cdab988bcf627",
+                "sha256:9ee9eaa6634bcdd3cbf6d630aaae04c14104a82aa923d469e802cd40d1df47c4"
             ],
             "index": "pypi",
-            "version": "==0.11.0a0"
+            "version": "==0.11.1a0"
         },
         "glcontext": {
             "hashes": [
