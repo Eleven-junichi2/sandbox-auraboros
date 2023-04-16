@@ -20,7 +20,7 @@ from dungeongen2 import GameDungeonMap
 
 AssetFilePath.set_asset_root(Path(sys.argv[0]).parent / "assets")
 
-engine.init(pixel_scale=1)
+engine.init(pixel_scale=1, set_mode_flags=pygame.DOUBLEBUF | pygame.OPENGL)
 
 textfactory = TextSurfaceFactory()
 textfactory.register_font(
@@ -344,7 +344,7 @@ class DungeonScene(Scene):
                 self.camera_offset_y -= dy
                 self.drag_start_pos = event.pos
 
-    def update(self):
+    def update(self, dt):
         self.menuui.set_pos_to_center()
         if self.control_mode == "menu":
             self.msgbox.text = "(press a to close menu)"
