@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 pygame = "*"
 moderngl = "*"
-auraboros = "*"
+auraboros = "==0.13.0-alpha"
 
 [dev-packages]
 flake8 = "*"
